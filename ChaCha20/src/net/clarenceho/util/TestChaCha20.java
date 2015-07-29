@@ -166,11 +166,9 @@ public class TestChaCha20 {
     
     @Test
     public void testIetfVector() {
-        int len = IETF_KEY.length;
-        for (int i = 0; i < len; i++) {
-            byte[] result = testImplementation(IETF_PLAIN[i], IETF_KEY[i], IETF_NONCE[i], IETF_COUNTER[i]);
-            assertTrue(Arrays.equals(result, IETF_EXPECTED[i]));
-        }
+        IntStream.range(0, IETF_KEY.length).parallel().forEach(l ->
+                assertTrue(Arrays.equals(testImplementation(IETF_PLAIN[l], IETF_KEY[l], IETF_NONCE[l], IETF_COUNTER[l]),
+                                         IETF_EXPECTED[l])));
     }
 
     /*
