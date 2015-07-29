@@ -27,21 +27,19 @@ public class ChaCha20 {
     public static final int NONCE_SIZE_IETF = 12;
 
     private int[] matrix = new int[16];
+
     
-    private int byte2Int_LE(byte[] x, int i) {
-        return x[i] | (x[i + 1] << 8) | (x[i + 2] << 16) | (x[i + 3] << 24);
+    private int littleEndianToInt(byte[] bs, int i) {
+        return (bs[i] & 0xff) | ((bs[i + 1] & 0xff) << 8) | ((bs[i + 2] & 0xff) << 16) | ((bs[i + 3] & 0xff) << 24);
     }
 
-    private void int2Byte_LE(int[] x, int i, int u) {
-        x[i] = u;
-        u >>>= 8;
-        x[i + 1] = u;
-        u >>>= 8;
-        x[i + 2] = u;
-        u >>>= 8;
-        x[i + 3] = u;
+    private void intToLittleEndian(int n, byte[] bs, int off) {
+        bs[  off] = (byte)(n       );
+        bs[++off] = (byte)(n >>>  8);
+        bs[++off] = (byte)(n >>> 16);
+        bs[++off] = (byte)(n >>> 24);
     }
-
+    
     protected static int ROTATE(int v, int c) {
         return (v << c) | (v >>> (32 - c));
     }
@@ -77,26 +75,26 @@ public class ChaCha20 {
         this.matrix[ 1] = 0x3320646e;
         this.matrix[ 2] = 0x79622d32;
         this.matrix[ 3] = 0x6b206574;
-        this.matrix[ 4] = byte2Int_LE(key, 0);
-        this.matrix[ 5] = byte2Int_LE(key, 4);
-        this.matrix[ 6] = byte2Int_LE(key, 8);
-        this.matrix[ 7] = byte2Int_LE(key, 12);
-        this.matrix[ 8] = byte2Int_LE(key, 16);
-        this.matrix[ 9] = byte2Int_LE(key, 20);
-        this.matrix[10] = byte2Int_LE(key, 24);
-        this.matrix[11] = byte2Int_LE(key, 28);
+        this.matrix[ 4] = littleEndianToInt(key, 0);
+        this.matrix[ 5] = littleEndianToInt(key, 4);
+        this.matrix[ 6] = littleEndianToInt(key, 8);
+        this.matrix[ 7] = littleEndianToInt(key, 12);
+        this.matrix[ 8] = littleEndianToInt(key, 16);
+        this.matrix[ 9] = littleEndianToInt(key, 20);
+        this.matrix[10] = littleEndianToInt(key, 24);
+        this.matrix[11] = littleEndianToInt(key, 28);
         
         if (nonce.length == NONCE_SIZE_REF) {        // reference implementation
             this.matrix[12] = 0;
             this.matrix[13] = 0;
-            this.matrix[14] = byte2Int_LE(nonce, 0);
-            this.matrix[15] = byte2Int_LE(nonce, 4);
+            this.matrix[14] = littleEndianToInt(nonce, 0);
+            this.matrix[15] = littleEndianToInt(nonce, 4);
 
         } else if (nonce.length == NONCE_SIZE_IETF) {
             this.matrix[12] = counter;
-            this.matrix[13] = byte2Int_LE(nonce, 0);
-            this.matrix[14] = byte2Int_LE(nonce, 4);
-            this.matrix[15] = byte2Int_LE(nonce, 8);
+            this.matrix[13] = littleEndianToInt(nonce, 0);
+            this.matrix[14] = littleEndianToInt(nonce, 4);
+            this.matrix[15] = littleEndianToInt(nonce, 8);
         } else {
             throw new WrongNonceSizeException();
         }
@@ -104,7 +102,7 @@ public class ChaCha20 {
     
     public void encrypt(byte[] dst, byte[] src, int len) {
         int[] x = new int[16];
-        int[] output = new int[64];
+        byte[] output = new byte[64];
         int i, dpos = 0, spos = 0;
 
         while (len > 0) {
@@ -120,7 +118,7 @@ public class ChaCha20 {
                 quarterRound(x, 3, 4,  9, 14);
             }
             for (i = 16; i-- > 0; ) x[i] += this.matrix[i];
-            for (i = 16; i-- > 0; ) int2Byte_LE(output, 4 * i, x[i]);
+            for (i = 16; i-- > 0; ) intToLittleEndian(x[i], output, 4 * i);
 
             this.matrix[12] += 1;
             if (this.matrix[12] <= 0) {
