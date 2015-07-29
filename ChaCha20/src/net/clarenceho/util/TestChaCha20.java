@@ -7,12 +7,17 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-// compare again Bouncy Castle's implementation
+// compare against Bouncy Castle's implementation
 import org.bouncycastle.crypto.engines.ChaChaEngine;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.crypto.StreamCipher;
 
+/*
+ * Test cases for standalone implementation of ChaCha 256-bit
+ * <p/>
+ * Created by Clarence Ho on 20150729
+ */
 public class TestChaCha20 {
 
     /*
@@ -35,7 +40,16 @@ public class TestChaCha20 {
     };
     final byte[][] IETF_PLAIN = {
             new byte[64],
-            hexStr2Byte("4c616469657320616e642047656e746c656d656e206f662074686520636c617373206f66202739393a204966204920636f756c64206f6666657220796f75206f6e6c79206f6e652074697020666f7220746865206675747572652c2073756e73637265656e20776f756c642062652069742e"),
+            hexStr2Byte(
+                    "4c616469657320616e642047656e746c" +
+                    "656d656e206f662074686520636c6173" +
+                    "73206f66202739393a20496620492063" + 
+                    "6f756c64206f6666657220796f75206f" + 
+                    "6e6c79206f6e652074697020666f7220" + 
+                    "746865206675747572652c2073756e73" + 
+                    "637265656e20776f756c642062652069" + 
+                    "742e"
+                    ),
             new byte[64],
             hexStr2Byte(
                     "416e79207375626d697373696f6e2074" +
@@ -75,9 +89,28 @@ public class TestChaCha20 {
                     )
     };
     final byte[][] IETF_EXPECTED = {
-            hexStr2Byte("10f1e7e4d13b5915500fdd1fa32071c4c7d1f4c733c068030422aa9ac3d46c4ed2826446079faa0914c2d705d98b02a2b5129cd1de164eb9cbd083e8a2503c4e"),
-            hexStr2Byte("6e2e359a2568f98041ba0728dd0d6981e97e7aec1d4360c20a27afccfd9fae0bf91b65c5524733ab8f593dabcd62b3571639d624e65152ab8f530c359f0861d807ca0dbf500d6a6156a38e088a22b65e52bc514d16ccf806818ce91ab77937365af90bbf74a35be6b40b8eedf2785e42874d"),
-            hexStr2Byte("76b8e0ada0f13d90405d6ae55386bd28bdd219b8a08ded1aa836efcc8b770dc7da41597c5157488d7724e03fb8d84a376a43b8f41518a11cc387b669b2ee6586"),
+            hexStr2Byte(
+                    "10f1e7e4d13b5915500fdd1fa32071c4" + 
+                    "c7d1f4c733c068030422aa9ac3d46c4e" + 
+                    "d2826446079faa0914c2d705d98b02a2" +
+                    "b5129cd1de164eb9cbd083e8a2503c4e"
+                    ),
+            hexStr2Byte(
+                    "6e2e359a2568f98041ba0728dd0d6981" + 
+                    "e97e7aec1d4360c20a27afccfd9fae0b" +
+                    "f91b65c5524733ab8f593dabcd62b357" +
+                    "1639d624e65152ab8f530c359f0861d8" + 
+                    "07ca0dbf500d6a6156a38e088a22b65e" + 
+                    "52bc514d16ccf806818ce91ab7793736" + 
+                    "5af90bbf74a35be6b40b8eedf2785e42" + 
+                    "874d"
+                    ),
+            hexStr2Byte(
+                    "76b8e0ada0f13d90405d6ae55386bd28" + 
+                    "bdd219b8a08ded1aa836efcc8b770dc7" + 
+                    "da41597c5157488d7724e03fb8d84a37" + 
+                    "6a43b8f41518a11cc387b669b2ee6586"
+                    ),
             hexStr2Byte(
                     "a3fbf07df3fa2fde4f376ca23e827370" +
                     "41605d9f4f4f57bd8cff2c1d4b7955ec" +
@@ -136,9 +169,6 @@ public class TestChaCha20 {
         int len = IETF_KEY.length;
         for (int i = 0; i < len; i++) {
             byte[] result = testImplementation(IETF_PLAIN[i], IETF_KEY[i], IETF_NONCE[i], IETF_COUNTER[i]);
-            System.err.println(byte2HexStr(result));
-            System.err.println(byte2HexStr(IETF_EXPECTED[i]));
-
             assertTrue(Arrays.equals(result, IETF_EXPECTED[i]));
         }
     }
@@ -148,7 +178,7 @@ public class TestChaCha20 {
      */
     @Test
     public void testRandom1() {
-        int[] len = {16, 32, 64, 128, 100, 200, 300, 500, 1024, 1048576, 100 * 1048576};
+        int[] len = {16, 32, 64, 128, 100, 200, 256, 300, 500, 512, 1024, 1048576, 100 * 1048576};
         IntStream.of(len).parallel().forEach(l -> assertTrue(testRandomLen(l)));
     }
     
@@ -174,19 +204,17 @@ public class TestChaCha20 {
      */
     @Test
     public void testRandom2() {
-        int[] len = {64};
+        int[] len = {16, 32, 64, 128, 100, 200, 256, 300, 500, 512, 1024, 1048576, 100 * 1048576};
         IntStream.of(len).parallel().forEach(l -> assertTrue(testRandomBC(l)));
     }
     
     protected boolean testRandomBC(int len) {
         Random rand = new Random();
         
-        //byte[] key = new byte[ChaCha20.KEY_SIZE];
-        //rand.nextBytes(key);
-        byte[] key = hexStr2Byte("0000000000000000000000000000000000000000000000000000000000000000");
+        byte[] key = new byte[ChaCha20.KEY_SIZE];
+        rand.nextBytes(key);
         byte[] nonce = new byte[ChaCha20.NONCE_SIZE_REF];
         rand.nextBytes(nonce);
-        //byte[] nonce = hexStr2Byte("0000000000000001");
         byte[] plain = new byte[len];
         rand.nextBytes(plain);
         int counter = 0;
@@ -194,9 +222,6 @@ public class TestChaCha20 {
         byte[] bc = bouncyCastle(plain, key, nonce);
         byte[] own = testImplementation(plain, key, nonce, counter);
         
-        //System.err.println(byte2HexStr(bc));
-        //System.err.println(byte2HexStr(own));
-
         return Arrays.equals(own, bc);
     }
     

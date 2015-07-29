@@ -1,13 +1,15 @@
 package net.clarenceho.util;
 
 /*
+ * Quick-n-dirty standalone implementation of ChaCha 256-bit
+ * <p/>
+ * Created by Clarence Ho on 20150729
+ * <p/>
  * References:
  * ~ http://cr.yp.to/chacha/chacha-20080128.pdf
- * ~ https://github.com/quartzjer/chacha20
  * ~ https://tools.ietf.org/html/draft-irtf-cfrg-chacha20-poly1305-01
- * ~ https://github.com/jotcmd/chacha20/blob/master/Chacha20.java
- * ~ https://github.com/bcgit/bc-java/blob/master/core/src/main/java/org/bouncycastle/crypto/engines/ChaChaEngine.java
- * ~ https://github.com/codahale/chacha20/blob/master/chacha20.go
+ * ~ https://github.com/quartzjer/chacha20
+ * ~ https://github.com/jotcmd/chacha20
  */
 public class ChaCha20 {
     
@@ -29,11 +31,11 @@ public class ChaCha20 {
     private int[] matrix = new int[16];
 
     
-    private int littleEndianToInt(byte[] bs, int i) {
+    protected static int littleEndianToInt(byte[] bs, int i) {
         return (bs[i] & 0xff) | ((bs[i + 1] & 0xff) << 8) | ((bs[i + 2] & 0xff) << 16) | ((bs[i + 3] & 0xff) << 24);
     }
 
-    private void intToLittleEndian(int n, byte[] bs, int off) {
+    protected static void intToLittleEndian(int n, byte[] bs, int off) {
         bs[  off] = (byte)(n       );
         bs[++off] = (byte)(n >>>  8);
         bs[++off] = (byte)(n >>> 16);
