@@ -122,6 +122,7 @@ public class ChaCha20 {
             for (i = 16; i-- > 0; ) x[i] += this.matrix[i];
             for (i = 16; i-- > 0; ) intToLittleEndian(x[i], output, 4 * i);
 
+            // TODO: (1) check block count is 32-bit vs 64-bit; (2) java int is signed!
             this.matrix[12] += 1;
             if (this.matrix[12] <= 0) {
                 this.matrix[13] += 1;
