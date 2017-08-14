@@ -15,11 +15,7 @@ import java.util.Arrays;
  * ~ https://github.com/jotcmd/chacha20
  */
 public class ChaCha20 {
-
-    public static void main(String[] args) {
-        System.out.println(Arrays.toString(SIGMA));
-    }
-
+    
     /*
      * Key size in byte
      */
