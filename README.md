@@ -1,5 +1,5 @@
 # ChaCha20
-Quick-n-dirty standalone Java implementation of ChaCha20 (256-bit key, 64- or 96-bit nonce)
+Quick-n-dirty standalone Java implementation of ChaCha20 (256-bit key, 64- or 96-bit nonce). Do NOT use this unless you know what you are doing.  Use the JDK library or Bouncy Castle library instead.
 
 References:
 * http://cr.yp.to/chacha/chacha-20080128.pdf
